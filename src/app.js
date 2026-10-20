@@ -48,10 +48,17 @@ function ballMovement() {
   dy = -dy;
  }
 
- const isBallSameXAsPaddle = x > paddleX && x < paddleX + paddleWidth;
- const isBallTouchingPaddle = y + dy > paddleY - ballRadius;
+ const isBallSameXAsPaddle =
+  x + ballRadius > paddleX && x - ballRadius < paddleX + paddleWidth;
+ const isBallTouchingPaddle =
+  dy > 0 && y + dy > paddleY - ballRadius && y <= paddleY;
  if (isBallSameXAsPaddle && isBallTouchingPaddle) {
-  dy = -dy;
+  // El ángulo de rebote depende de dónde golpea la pelota en la paleta
+  const hitPoint = (x - (paddleX + paddleWidth / 2)) / (paddleWidth / 2);
+  const angle = Math.max(-1, Math.min(1, hitPoint)) * (Math.PI / 3);
+  const speed = Math.hypot(dx, dy);
+  dx = speed * Math.sin(angle);
+  dy = -speed * Math.cos(angle);
  } else if (y + dy > canvas.height - ballRadius) {
   document.location.reload();
  }
@@ -61,9 +68,11 @@ function ballMovement() {
 }
 
 function paddleMovement() {
- if (rightPressed && canvas.width - paddleWidth > paddleX) {
-  paddleX += paddleSensibility;
- } else if (leftPressed && paddleX > 0) paddleX -= paddleSensibility;
+ if (rightPressed) {
+  paddleX = Math.min(paddleX + paddleSensibility, canvas.width - paddleWidth);
+ } else if (leftPressed) {
+  paddleX = Math.max(paddleX - paddleSensibility, 0);
+ }
 }
 
 function cleanCanvas() {
